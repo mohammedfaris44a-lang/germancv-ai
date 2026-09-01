@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,6 +13,10 @@
 
 <body>
 
+    <!-- =========================
+         NAVBAR
+    ========================== -->
+
     <header class="navbar">
 
         <div class="logo">
@@ -25,7 +30,13 @@
     </header>
 
 
+    <!-- =========================
+         MAIN
+    ========================== -->
+
     <main class="container">
+
+        <!-- HERO -->
 
         <section class="hero">
 
@@ -47,19 +58,26 @@
         </section>
 
 
+        <!-- GENERATOR -->
+
         <section class="generator">
 
 
             <!-- =========================
-                 CARD 1
+                 INFORMATION CARD
             ========================== -->
 
             <div class="card">
 
-                <h2>1. Add your information</h2>
+                <h2>
+                    1. Add your information
+                </h2>
 
 
-                <div class="upload-box" id="uploadBox">
+                <div
+                    class="upload-box"
+                    id="uploadBox"
+                >
 
                     <div class="upload-icon">
                         📄
@@ -95,10 +113,14 @@
                 </div>
 
 
+                <!-- OR -->
+
                 <div class="separator">
                     <span>OR</span>
                 </div>
 
+
+                <!-- TEXT INPUT -->
 
                 <textarea
                     id="userText"
@@ -111,7 +133,7 @@ Email: example@gmail.com
 Phone: +212...
 Education: IFMIA Casablanca
 Experience: Automotive maintenance
-Skills: Mechanical maintenance...
+Skills: Mechanical maintenance
 Languages: Arabic, French..."
                 ></textarea>
 
@@ -120,7 +142,7 @@ Languages: Arabic, French..."
 
 
             <!-- =========================
-                 CARD 2
+                 JOB CARD
             ========================== -->
 
             <div class="card">
@@ -129,6 +151,8 @@ Languages: Arabic, French..."
                     2. Job information
                 </h2>
 
+
+                <!-- TARGET JOB -->
 
                 <label for="jobPosition">
                     Target Job
@@ -141,6 +165,8 @@ Languages: Arabic, French..."
                     placeholder="Example: KFZ-Mechatroniker"
                 >
 
+
+                <!-- DOCUMENT TYPE -->
 
                 <label>
                     Document
@@ -187,9 +213,11 @@ Languages: Arabic, French..."
 
                     </label>
 
-
                 </div>
 
+
+
+                <!-- LANGUAGE -->
 
                 <div class="language">
 
@@ -204,6 +232,9 @@ Languages: Arabic, French..."
                 </div>
 
 
+
+                <!-- GENERATE -->
+
                 <button
                     id="generateBtn"
                     class="generate-btn"
@@ -212,6 +243,8 @@ Languages: Arabic, French..."
                     ✨ Generate Documents
                 </button>
 
+
+                <!-- MESSAGE -->
 
                 <div
                     id="message"
@@ -222,26 +255,59 @@ Languages: Arabic, French..."
 
         </section>
 
+
+        <!-- RESULT WILL APPEAR HERE -->
+
+        <section
+            id="resultSection"
+            style="margin-top: 30px;"
+        ></section>
+
     </main>
 
 
 
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
     <footer>
+
         GermanCV AI © 2026
+
     </footer>
 
 
 
-    <!-- PDF.JS FIRST -->
+    <!-- =========================
+         PDF.JS
+         Used to READ uploaded PDFs
+    ========================== -->
+
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
     </script>
 
 
-    <!-- YOUR JAVASCRIPT SECOND -->
-    <script src="script.js"></script>
 
+    <!-- =========================
+         jsPDF
+         Used to CREATE PDF files
+    ========================== -->
+
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+
+
+
+    <!-- =========================
+         YOUR JAVASCRIPT
+    ========================== -->
+
+    <script src="script.js"></script>
 
 </body>
 
 </html>
+```
