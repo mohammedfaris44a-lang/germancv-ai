@@ -13,118 +13,102 @@
 
 <body>
 
-    <!-- =========================
-         NAVBAR
-    ========================== -->
+<header class="navbar">
 
-    <header class="navbar">
+    <div class="logo">
+        🇩🇪 German<span>CV</span> AI
+    </div>
 
-        <div class="logo">
-            🇩🇪 German<span>CV</span> AI
+    <div class="status">
+        ● AI Ready
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="hero">
+
+        <div class="badge">
+            ✨ AI-Powered CV Generator
         </div>
 
-        <div class="status">
-            ● AI Ready
-        </div>
+        <h1>
+            Create your professional
+            <span>German CV</span>
+        </h1>
 
-    </header>
+        <p>
+            Upload your information or paste your text.
+            Our AI will transform it into a professional
+            German CV and cover letter.
+        </p>
 
-
-    <!-- =========================
-         MAIN
-    ========================== -->
-
-    <main class="container">
-
-        <!-- HERO -->
-
-        <section class="hero">
-
-            <div class="badge">
-                ✨ AI-Powered CV Generator
-            </div>
-
-            <h1>
-                Create your professional
-                <span>German CV</span>
-            </h1>
-
-            <p>
-                Upload your information or paste your text.
-                Our AI will transform it into a professional
-                German CV and cover letter.
-            </p>
-
-        </section>
+    </section>
 
 
-        <!-- GENERATOR -->
-
-        <section class="generator">
+    <section class="generator">
 
 
-            <!-- =========================
-                 INFORMATION CARD
-            ========================== -->
+        <!-- INFORMATION -->
 
-            <div class="card">
+        <div class="card">
 
-                <h2>
-                    1. Add your information
-                </h2>
+            <h2>
+                1. Add your information
+            </h2>
+
+
+            <div
+                class="upload-box"
+                id="uploadBox"
+            >
+
+                <div class="upload-icon">
+                    📄
+                </div>
+
+                <h3>
+                    Upload your PDF
+                </h3>
+
+                <p>
+                    Choose your CV PDF from your computer
+                </p>
+
+
+                <!-- REAL FILE INPUT -->
+
+                <input
+                    type="file"
+                    id="pdfInput"
+                    accept="application/pdf,.pdf"
+                >
 
 
                 <div
-                    class="upload-box"
-                    id="uploadBox"
-                >
-
-                    <div class="upload-icon">
-                        📄
-                    </div>
-
-                    <h3>
-                        Upload your PDF
-                    </h3>
-
-                    <p>
-                        Drag & drop your CV or information here
-                    </p>
+                    id="fileName"
+                    style="margin-top:15px;"
+                ></div>
 
 
-                    <label
-                        for="pdfInput"
-                        class="upload-btn"
-                    >
-                        Choose PDF
-                    </label>
+                <div
+                    id="message"
+                    class="message"
+                ></div>
+
+            </div>
 
 
-                    <input
-                        type="file"
-                        id="pdfInput"
-                        accept=".pdf,application/pdf"
-                        hidden
-                    >
+            <div class="separator">
+                <span>OR</span>
+            </div>
 
 
-                    <div id="fileName"></div>
-
-                </div>
-
-
-                <!-- OR -->
-
-                <div class="separator">
-                    <span>OR</span>
-                </div>
-
-
-                <!-- TEXT INPUT -->
-
-                <textarea
-                    id="userText"
-                    placeholder="Paste your information here...
+            <textarea
+                id="userText"
+                placeholder="Paste your information here...
 
 Example:
 
@@ -135,177 +119,136 @@ Education: IFMIA Casablanca
 Experience: Automotive maintenance
 Skills: Mechanical maintenance
 Languages: Arabic, French..."
-                ></textarea>
+            ></textarea>
 
-            </div>
-
-
-
-            <!-- =========================
-                 JOB CARD
-            ========================== -->
-
-            <div class="card">
-
-                <h2>
-                    2. Job information
-                </h2>
-
-
-                <!-- TARGET JOB -->
-
-                <label for="jobPosition">
-                    Target Job
-                </label>
-
-
-                <input
-                    type="text"
-                    id="jobPosition"
-                    placeholder="Example: KFZ-Mechatroniker"
-                >
-
-
-                <!-- DOCUMENT TYPE -->
-
-                <label>
-                    Document
-                </label>
-
-
-                <div class="options">
-
-
-                    <label class="option">
-
-                        <input
-                            type="radio"
-                            name="document"
-                            value="cv"
-                            checked
-                        >
-
-                        <span>
-                            📄
-                            <strong>
-                                CV only
-                            </strong>
-                        </span>
-
-                    </label>
+        </div>
 
 
 
-                    <label class="option">
+        <!-- JOB -->
 
-                        <input
-                            type="radio"
-                            name="document"
-                            value="both"
-                        >
+        <div class="card">
 
-                        <span>
-                            📄 ✉️
-                            <strong>
-                                CV + Cover Letter
-                            </strong>
-                        </span>
-
-                    </label>
-
-                </div>
+            <h2>
+                2. Job information
+            </h2>
 
 
+            <label for="jobPosition">
+                Target Job
+            </label>
 
-                <!-- LANGUAGE -->
 
-                <div class="language">
+            <input
+                type="text"
+                id="jobPosition"
+                placeholder="Example: KFZ-Mechatroniker"
+            >
+
+
+            <label>
+                Document
+            </label>
+
+
+            <div class="options">
+
+                <label class="option">
+
+                    <input
+                        type="radio"
+                        name="document"
+                        value="cv"
+                        checked
+                    >
 
                     <span>
-                        Output language
+                        📄
+                        <strong>
+                            CV only
+                        </strong>
                     </span>
 
-                    <strong>
-                        🇩🇪 German
-                    </strong>
-
-                </div>
+                </label>
 
 
+                <label class="option">
 
-                <!-- GENERATE -->
+                    <input
+                        type="radio"
+                        name="document"
+                        value="both"
+                    >
 
-                <button
-                    id="generateBtn"
-                    class="generate-btn"
-                    type="button"
-                >
-                    ✨ Generate Documents
-                </button>
+                    <span>
+                        📄 ✉️
+                        <strong>
+                            CV + Cover Letter
+                        </strong>
+                    </span>
 
-
-                <!-- MESSAGE -->
-
-                <div
-                    id="message"
-                    class="message"
-                ></div>
+                </label>
 
             </div>
 
-        </section>
+
+            <div class="language">
+
+                <span>
+                    Output language
+                </span>
+
+                <strong>
+                    🇩🇪 German
+                </strong>
+
+            </div>
 
 
-        <!-- RESULT WILL APPEAR HERE -->
+            <button
+                id="generateBtn"
+                class="generate-btn"
+                type="button"
+            >
+                ✨ Generate Documents
+            </button>
 
-        <section
-            id="resultSection"
-            style="margin-top: 30px;"
-        ></section>
+        </div>
 
-    </main>
-
-
-
-    <!-- =========================
-         FOOTER
-    ========================== -->
-
-    <footer>
-
-        GermanCV AI © 2026
-
-    </footer>
+    </section>
 
 
+    <section
+        id="resultSection"
+        style="margin-top:30px;"
+    ></section>
 
-    <!-- =========================
-         PDF.JS
-         Used to READ uploaded PDFs
-    ========================== -->
-
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
-    </script>
+</main>
 
 
-
-    <!-- =========================
-         jsPDF
-         Used to CREATE PDF files
-    ========================== -->
-
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    </script>
+<footer>
+    GermanCV AI © 2026
+</footer>
 
 
 
-    <!-- =========================
-         YOUR JAVASCRIPT
-    ========================== -->
+<!-- PDF.JS -->
 
-    <script src="script.js"></script>
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+</script>
+
+
+<!-- jsPDF -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
+
+
+<!-- YOUR JAVASCRIPT -->
+
+<script src="script.js"></script>
 
 </body>
 
