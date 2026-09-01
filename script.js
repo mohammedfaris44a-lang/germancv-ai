@@ -1,339 +1,580 @@
-const pdfInput = document.getElementById("pdfInput");
-const pdfInput = document.getElementById("pdfInput");
-const fileName = document.getElementById("fileName");
-const generateBtn = document.getElementById("generateBtn");
-const message = document.getElementById("message");
-const userText = document.getElementById("userText");
-const jobPosition = document.getElementById("jobPosition");
+```javascript id="m4k2qa"
+document.addEventListener("DOMContentLoaded", function () {
 
-let extractedPDFText = "";
+    // =========================
+    // ELEMENTS
+    // =========================
+
+    const pdfInput = document.getElementById("pdfInput");
+    const fileName = document.getElementById("fileName");
+    const generateBtn = document.getElementById("generateBtn");
+    const message = document.getElementById("message");
+    const userText = document.getElementById("userText");
+    const jobPosition = document.getElementById("jobPosition");
 
 
-// PDF UPLOAD
-if (pdfInput) {
+    let extractedPDFText = "";
 
-    pdfInput.addEventListener("change", async function () {
 
-        const file = this.files?.[0];
+    // =========================
+    // PDF UPLOAD
+    // =========================
 
-        if (!file) return;
+    if (pdfInput) {
 
-        if (
-            file.type !== "application/pdf" &&
-            !file.name.toLowerCase().endsWith(".pdf")
-        ) {
-            message.textContent = "❌ Please select a PDF file.";
-            return;
-        }
+        pdfInput.addEventListener("change", async function () {
 
-        fileName.textContent = "📄 " + file.name;
-        message.textContent = "⏳ Reading your PDF...";
+            const file = pdfInput.files[0];
 
-        try {
-
-            if (typeof window.pdfjsLib === "undefined") {
-                throw new Error("PDF.js is not loaded.");
+            if (!file) {
+                return;
             }
 
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-            const arrayBuffer = await file.arrayBuffer();
-
-            const pdf = await window.pdfjsLib
-                .getDocument({ data: arrayBuffer })
-                .promise;
-
-            let fullText = "";
-
-            for (
-                let pageNumber = 1;
-                pageNumber <= pdf.numPages;
-                pageNumber++
+            if (
+                file.type !== "application/pdf" &&
+                !file.name.toLowerCase().endsWith(".pdf")
             ) {
 
-                const page = await pdf.getPage(pageNumber);
-
-                const content = await page.getTextContent();
-
-                const pageText = content.items
-                    .map(item => item.str)
-                    .join(" ");
-
-                fullText += pageText + "\n";
-            }
-
-            extractedPDFText = fullText.trim();
-
-            if (!extractedPDFText) {
-
-                fileName.textContent = "⚠️ " + file.name;
                 message.textContent =
-                    "⚠️ This PDF has no readable text.";
+                    "❌ Please select a PDF file.";
 
                 return;
             }
 
-            fileName.textContent =
-                "✅ " + file.name + " — Ready";
-
-            message.textContent =
-                "✅ PDF uploaded successfully!";
-
-        } catch (error) {
-
-            console.error("PDF ERROR:", error);
-
-            extractedPDFText = "";
 
             fileName.textContent =
-                "❌ " + file.name;
+                "⏳ Reading " + file.name + "...";
 
             message.textContent =
-                "❌ Could not read this PDF.";
-        }
-    });
-}
+                "⏳ Reading your PDF...";
 
 
-// GENERATE
-if (generateBtn) {
+            try {
 
-    generateBtn.addEventListener("click", async function () {
+                // Check PDF.js
 
-        const manualText =
-            userText?.value.trim() || "";
+                if (
+                    typeof pdfjsLib === "undefined"
+                ) {
 
-        const job =
-            jobPosition?.value.trim() || "";
-
-        const information =
-            manualText || extractedPDFText;
-
-        const documentType =
-            document.querySelector(
-                'input[name="document"]:checked'
-            )?.value || "cv";
-
-
-        if (!information) {
-
-            message.textContent =
-                "⚠️ Upload a PDF or enter your information.";
-
-            return;
-        }
-
-
-        if (!job) {
-
-            message.textContent =
-                "⚠️ Please enter the target job.";
-
-            return;
-        }
-
-
-        generateBtn.disabled = true;
-
-        generateBtn.textContent = "⏳ Creating...";
-
-        message.textContent =
-            "🤖 AI is creating your German CV...";
-
-
-        try {
-
-            const response = await fetch(
-                "/api/generate",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        information: information,
-                        job: job,
-                        document: documentType
-                    })
+                    throw new Error(
+                        "PDF.js is not loaded."
+                    );
                 }
+
+
+                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+                // Read PDF
+
+                const buffer =
+                    await file.arrayBuffer();
+
+
+                const pdf =
+                    await pdfjsLib
+                        .getDocument({
+                            data: buffer
+                        })
+                        .promise;
+
+
+                let text = "";
+
+
+                // Read pages
+
+                for (
+                    let i = 1;
+                    i <= pdf.numPages;
+                    i++
+                ) {
+
+                    const page =
+                        await pdf.getPage(i);
+
+
+                    const content =
+                        await page.getTextContent();
+
+
+                    for (
+                        const item of content.items
+                    ) {
+
+                        if (item.str) {
+                            text +=
+                                item.str + " ";
+                        }
+                    }
+
+
+                    text += "\n";
+                }
+
+
+                extractedPDFText =
+                    text.trim();
+
+
+                if (!extractedPDFText) {
+
+                    fileName.textContent =
+                        "⚠️ " + file.name;
+
+                    message.textContent =
+                        "⚠️ This PDF contains no readable text.";
+
+                    return;
+                }
+
+
+                // SUCCESS
+
+                fileName.textContent =
+                    "✅ " + file.name;
+
+                message.textContent =
+                    "✅ PDF uploaded successfully!";
+
+
+                console.log(
+                    "PDF TEXT:",
+                    extractedPDFText
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "PDF ERROR:",
+                    error
+                );
+
+
+                extractedPDFText = "";
+
+
+                fileName.textContent =
+                    "❌ " + file.name;
+
+
+                message.textContent =
+                    "❌ Error reading PDF: " +
+                    error.message;
+            }
+
+        });
+
+    }
+
+
+    // =========================
+    // GENERATE
+    // =========================
+
+    if (generateBtn) {
+
+        generateBtn.addEventListener(
+            "click",
+            async function () {
+
+                const manualText =
+                    userText
+                        ? userText.value.trim()
+                        : "";
+
+
+                const job =
+                    jobPosition
+                        ? jobPosition.value.trim()
+                        : "";
+
+
+                // PDF OR TEXT
+
+                const information =
+                    manualText ||
+                    extractedPDFText;
+
+
+                // DOCUMENT TYPE
+
+                const selected =
+                    document.querySelector(
+                        'input[name="document"]:checked'
+                    );
+
+
+                const documentType =
+                    selected
+                        ? selected.value
+                        : "cv";
+
+
+                // CHECK INFORMATION
+
+                if (!information) {
+
+                    message.textContent =
+                        "⚠️ Upload a PDF or enter your information.";
+
+                    return;
+                }
+
+
+                // CHECK JOB
+
+                if (!job) {
+
+                    message.textContent =
+                        "⚠️ Please enter the target job.";
+
+                    return;
+                }
+
+
+                // LOADING
+
+                generateBtn.disabled =
+                    true;
+
+
+                generateBtn.textContent =
+                    "⏳ Creating...";
+
+
+                message.textContent =
+                    "🤖 AI is creating your German CV...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            "/api/generate",
+                            {
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        information:
+                                            information,
+
+                                        job:
+                                            job,
+
+                                        document:
+                                            documentType
+                                    })
+                            }
+                        );
+
+
+                    // Read response safely
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            data.error ||
+                            "API request failed."
+                        );
+                    }
+
+
+                    if (!data.result) {
+
+                        throw new Error(
+                            "No result from AI."
+                        );
+                    }
+
+
+                    // SHOW RESULT
+
+                    showResult(
+                        data.result
+                    );
+
+
+                    // CREATE PDF
+
+                    createPDF(
+                        data.result,
+                        job
+                    );
+
+
+                    message.textContent =
+                        "✅ German CV created successfully!";
+
+
+                } catch (error) {
+
+                    console.error(
+                        "GENERATE ERROR:",
+                        error
+                    );
+
+
+                    message.textContent =
+                        "❌ " +
+                        error.message;
+
+
+                } finally {
+
+                    generateBtn.disabled =
+                        false;
+
+
+                    generateBtn.textContent =
+                        "✨ Generate Documents";
+                }
+
+            }
+        );
+
+    }
+
+
+    // =========================
+    // SHOW RESULT
+    // =========================
+
+    function showResult(text) {
+
+        let box =
+            document.getElementById(
+                "resultBox"
             );
 
 
-            const data = await response.json();
+        if (!box) {
+
+            box =
+                document.createElement(
+                    "div"
+                );
 
 
-            if (!response.ok) {
-                throw new Error(
-                    data?.error || "AI generation failed."
+            box.id =
+                "resultBox";
+
+
+            box.style.marginTop =
+                "30px";
+
+
+            box.style.padding =
+                "30px";
+
+
+            box.style.background =
+                "white";
+
+
+            box.style.border =
+                "1px solid #ddd";
+
+
+            box.style.borderRadius =
+                "15px";
+
+
+            box.style.whiteSpace =
+                "pre-wrap";
+
+
+            box.style.lineHeight =
+                "1.7";
+
+
+            box.style.fontFamily =
+                "Arial, sans-serif";
+
+
+            document
+                .getElementById(
+                    "resultSection"
+                )
+                ?.appendChild(box);
+
+
+            if (!box.parentElement) {
+
+                document.body.appendChild(
+                    box
                 );
             }
+        }
 
 
-            if (!data?.result) {
-                throw new Error(
-                    "AI returned no result."
-                );
-            }
+        box.textContent =
+            text;
+    }
 
 
-            showResult(data.result);
+    // =========================
+    // CREATE PDF
+    // =========================
 
-            createPDF(data.result, job);
+    function createPDF(text, job) {
 
-            message.textContent =
-                "✅ German CV created successfully!";
-
-
-        } catch (error) {
+        if (
+            !window.jspdf ||
+            !window.jspdf.jsPDF
+        ) {
 
             console.error(
-                "GENERATION ERROR:",
-                error
+                "jsPDF is not loaded."
             );
 
-            message.textContent =
-                "❌ " + error.message;
-
-        } finally {
-
-            generateBtn.disabled = false;
-
-            generateBtn.textContent =
-                "✨ Generate Documents";
+            return;
         }
-    });
-}
 
 
-// SHOW RESULT
-function showResult(text) {
-
-    let resultBox =
-        document.getElementById("resultBox");
+        const jsPDF =
+            window.jspdf.jsPDF;
 
 
-    if (!resultBox) {
+        const pdf =
+            new jsPDF({
+                orientation:
+                    "portrait",
 
-        resultBox =
-            document.createElement("div");
+                unit:
+                    "mm",
 
-        resultBox.id = "resultBox";
-
-        resultBox.style.margin = "30px auto";
-        resultBox.style.padding = "30px";
-        resultBox.style.maxWidth = "900px";
-        resultBox.style.background = "#ffffff";
-        resultBox.style.border = "1px solid #e5e7eb";
-        resultBox.style.borderRadius = "15px";
-        resultBox.style.whiteSpace = "pre-wrap";
-        resultBox.style.lineHeight = "1.7";
-
-        document.body.appendChild(resultBox);
-    }
+                format:
+                    "a4"
+            });
 
 
-    resultBox.textContent = text;
-}
+        const width =
+            pdf.internal.pageSize.getWidth();
 
 
-// CREATE PDF
-function createPDF(text, job) {
-
-    if (
-        !window.jspdf ||
-        !window.jspdf.jsPDF
-    ) {
-
-        console.error("jsPDF is not loaded.");
-
-        return;
-    }
+        const height =
+            pdf.internal.pageSize.getHeight();
 
 
-    const { jsPDF } = window.jspdf;
-
-    const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4"
-    });
+        const margin = 18;
 
 
-    const pageWidth =
-        pdf.internal.pageSize.getWidth();
+        // TITLE
 
-    const pageHeight =
-        pdf.internal.pageSize.getHeight();
-
-    const margin = 18;
-
-
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(20);
-
-    pdf.text(
-        "LEBENSLAUF",
-        margin,
-        20
-    );
-
-
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(10);
-
-    pdf.text(
-        "Position: " + job,
-        margin,
-        28
-    );
-
-
-    const lines =
-        pdf.splitTextToSize(
-            text,
-            pageWidth - margin * 2
+        pdf.setFont(
+            "helvetica",
+            "bold"
         );
 
 
-    let y = 40;
+        pdf.setFontSize(
+            20
+        );
 
-
-    for (const line of lines) {
-
-        if (y > pageHeight - 18) {
-
-            pdf.addPage();
-
-            y = 20;
-        }
 
         pdf.text(
-            line,
+            "LEBENSLAUF",
             margin,
-            y
+            20
         );
 
-        y += 5;
+
+        // JOB
+
+        pdf.setFont(
+            "helvetica",
+            "normal"
+        );
+
+
+        pdf.setFontSize(
+            10
+        );
+
+
+        pdf.text(
+            "Position: " + job,
+            margin,
+            28
+        );
+
+
+        // CONTENT
+
+        const lines =
+            pdf.splitTextToSize(
+                text,
+                width - margin * 2
+            );
+
+
+        let y = 40;
+
+
+        for (
+            const line of lines
+        ) {
+
+            if (
+                y >
+                height - 15
+            ) {
+
+                pdf.addPage();
+
+                y = 20;
+            }
+
+
+            pdf.text(
+                line,
+                margin,
+                y
+            );
+
+
+            y += 5;
+        }
+
+
+        // FILE NAME
+
+        const cleanJob =
+            job
+                .replace(
+                    /[^a-zA-Z0-9äöüÄÖÜß ]/g,
+                    ""
+                )
+                .trim()
+                .replace(
+                    /\s+/g,
+                    "-"
+                );
+
+
+        pdf.save(
+            "German-CV-" +
+            (
+                cleanJob ||
+                "Document"
+            ) +
+            ".pdf"
+        );
     }
 
-
-    const safeJob =
-        job
-            .replace(
-                /[^a-zA-Z0-9äöüÄÖÜß ]/g,
-                ""
-            )
-            .trim()
-            .replace(/\s+/g, "-");
-
-
-    pdf.save(
-        "German-CV-" +
-        (safeJob || "Document") +
-        ".pdf"
-    );
-}
+});
 ```
