@@ -1,4 +1,7 @@
+```javascript
 export default async function handler(req, res) {
+
+    // Only POST requests
     if (req.method !== "POST") {
         return res.status(405).json({
             error: "Method not allowed"
@@ -6,101 +9,208 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { information, job, document } = req.body || {};
 
+        const {
+            information,
+            job,
+            document
+        } = req.body || {};
+
+
+        // Check input
         if (!information || !job) {
             return res.status(400).json({
                 error: "Information and job are required."
             });
         }
 
+
+        // Check API key
+        const apiKey =
+            process.env.GEMINI_API_KEY;
+
+        if (!apiKey) {
+            return res.status(500).json({
+                error: "GEMINI_API_KEY is not configured in Vercel."
+            });
+        }
+
+
+        // ==========================================
+        // PROMPT
+        // ==========================================
+
         const prompt = `
-You are a professional German CV and cover letter writer.
+You are a professional German CV and job application writer.
 
 Create a professional German job application based ONLY on the information provided by the user.
 
-Target job:
+TARGET JOB:
 ${job}
 
-User information:
+USER INFORMATION:
 ${information}
 
-Requested document:
-${document === "both"
-    ? "German CV and German Cover Letter"
-    : "German CV only"}
+REQUESTED DOCUMENT:
+${
+    document === "both"
+        ? "German CV and German Cover Letter"
+        : "German CV only"
+}
 
-Rules:
+IMPORTANT RULES:
+
 - Write everything in professional German.
-- Do not invent qualifications, experience, education, dates, companies or skills.
-- Improve grammar and professional wording.
-- Adapt the CV to the target job.
+- Do NOT invent information.
+- Do NOT invent qualifications.
+- Do NOT invent work experience.
+- Do NOT invent education.
+- Do NOT invent dates.
+- Do NOT invent companies.
+- Do NOT invent skills.
 - Keep all factual information accurate.
+- Improve grammar and wording.
+- Adapt the CV to the target job.
 - Use a clean professional structure.
-- If information is missing, omit it.
-- Make the cover letter concise and specific to the target job.
+- If information is missing, simply omit it.
+- Make the CV professional and concise.
+- If a cover letter is requested, make it specific to the target job.
+- Return plain text only.
+- Do not use markdown code blocks.
 
-Return the final documents as plain text.
+Create the final document now.
 `;
 
-        const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" +
-            process.env.GEMINI_API_KEY,
-            {
+
+        // ==========================================
+        // GEMINI API
+        // ==========================================
+
+        const url =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
+
+
+        const response =
+            await fetch(url, {
+
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+
+                    "Content-Type":
+                        "application/json",
+
+                    "x-goog-api-key":
+                        apiKey
+
                 },
 
                 body: JSON.stringify({
+
                     contents: [
+
                         {
+                            role: "user",
+
                             parts: [
+
                                 {
                                     text: prompt
                                 }
+
                             ]
                         }
-                    ]
-                })
-            }
-        );
 
-        const data = await response.json();
+                    ]
+
+                })
+
+            });
+
+
+        const data =
+            await response.json();
+
+
+        // ==========================================
+        // API ERROR
+        // ==========================================
 
         if (!response.ok) {
-            console.error("Gemini API error:", data);
 
-            return res.status(response.status).json({
+            console.error(
+                "Gemini API error:",
+                data
+            );
+
+            return res.status(
+                response.status
+            ).json({
+
                 error:
                     data?.error?.message ||
                     "Gemini API error."
+
             });
         }
 
+
+        // ==========================================
+        // GET AI RESULT
+        // ==========================================
+
         const result =
-            data?.candidates?.[0]?.content?.parts
-                ?.map(part => part.text || "")
+            data
+                ?.candidates?.[0]
+                ?.content?.parts
+                ?.map(
+                    part => part.text || ""
+                )
                 .join("")
                 .trim();
 
+
         if (!result) {
+
+            console.error(
+                "Gemini returned:",
+                data
+            );
+
             return res.status(500).json({
-                error: "Gemini returned no text."
+
+                error:
+                    "Gemini returned no text."
+
             });
         }
 
+
+        // ==========================================
+        // SUCCESS
+        // ==========================================
+
         return res.status(200).json({
-            result
+
+            result: result
+
         });
+
 
     } catch (error) {
 
-        console.error("Server error:", error);
+        console.error(
+            "Server error:",
+            error
+        );
 
         return res.status(500).json({
-            error: "Server error: " + error.message
+
+            error:
+                "Server error: " +
+                error.message
+
         });
     }
 }
+```
