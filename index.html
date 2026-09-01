@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>German CV AI</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <div class="logo">
+            🇩🇪 German<span>CV</span> AI
+        </div>
+
+        <div class="status">
+            ● AI Ready
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <section class="hero">
+
+            <div class="badge">
+                ✨ AI-Powered CV Generator
+            </div>
+
+            <h1>
+                Create your professional
+                <span>German CV</span>
+            </h1>
+
+            <p>
+                Upload your information or paste your text.
+                Our AI will transform it into a professional
+                German CV and cover letter.
+            </p>
+
+        </section>
+
+
+        <section class="generator">
+
+
+            <!-- =========================
+                 CARD 1
+            ========================== -->
+
+            <div class="card">
+
+                <h2>1. Add your information</h2>
+
+
+                <div class="upload-box" id="uploadBox">
+
+                    <div class="upload-icon">
+                        📄
+                    </div>
+
+                    <h3>
+                        Upload your PDF
+                    </h3>
+
+                    <p>
+                        Drag & drop your CV or information here
+                    </p>
+
+
+                    <label
+                        for="pdfInput"
+                        class="upload-btn"
+                    >
+                        Choose PDF
+                    </label>
+
+
+                    <input
+                        type="file"
+                        id="pdfInput"
+                        accept=".pdf,application/pdf"
+                        hidden
+                    >
+
+
+                    <div id="fileName"></div>
+
+                </div>
+
+
+                <div class="separator">
+                    <span>OR</span>
+                </div>
+
+
+                <textarea
+                    id="userText"
+                    placeholder="Paste your information here...
+
+Example:
+
+Name: Mohammed Ali
+Email: example@gmail.com
+Phone: +212...
+Education: IFMIA Casablanca
+Experience: Automotive maintenance
+Skills: Mechanical maintenance...
+Languages: Arabic, French..."
+                ></textarea>
+
+            </div>
+
+
+
+            <!-- =========================
+                 CARD 2
+            ========================== -->
+
+            <div class="card">
+
+                <h2>
+                    2. Job information
+                </h2>
+
+
+                <label for="jobPosition">
+                    Target Job
+                </label>
+
+
+                <input
+                    type="text"
+                    id="jobPosition"
+                    placeholder="Example: KFZ-Mechatroniker"
+                >
+
+
+                <label>
+                    Document
+                </label>
+
+
+                <div class="options">
+
+
+                    <label class="option">
+
+                        <input
+                            type="radio"
+                            name="document"
+                            value="cv"
+                            checked
+                        >
+
+                        <span>
+                            📄
+                            <strong>
+                                CV only
+                            </strong>
+                        </span>
+
+                    </label>
+
+
+
+                    <label class="option">
+
+                        <input
+                            type="radio"
+                            name="document"
+                            value="both"
+                        >
+
+                        <span>
+                            📄 ✉️
+                            <strong>
+                                CV + Cover Letter
+                            </strong>
+                        </span>
+
+                    </label>
+
+
+                </div>
+
+
+                <div class="language">
+
+                    <span>
+                        Output language
+                    </span>
+
+                    <strong>
+                        🇩🇪 German
+                    </strong>
+
+                </div>
+
+
+                <button
+                    id="generateBtn"
+                    class="generate-btn"
+                    type="button"
+                >
+                    ✨ Generate Documents
+                </button>
+
+
+                <div
+                    id="message"
+                    class="message"
+                ></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+    <footer>
+        GermanCV AI © 2026
+    </footer>
+
+
+
+    <!-- PDF.JS FIRST -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
+    </script>
+
+
+    <!-- YOUR JAVASCRIPT SECOND -->
+    <script src="script.js"></script>
+
+
+</body>
+
+</html>
