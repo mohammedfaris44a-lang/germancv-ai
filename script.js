@@ -1,4 +1,4 @@
-```javascript
+const pdfInput = document.getElementById("pdfInput");
 const pdfInput = document.getElementById("pdfInput");
 const fileName = document.getElementById("fileName");
 const generateBtn = document.getElementById("generateBtn");
