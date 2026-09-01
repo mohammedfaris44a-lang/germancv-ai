@@ -1,580 +1,350 @@
-```javascript id="m4k2qa"
-document.addEventListener("DOMContentLoaded", function () {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    // =========================
-    // ELEMENTS
-    // =========================
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    color: #111827;
+}
 
-    const pdfInput = document.getElementById("pdfInput");
-    const fileName = document.getElementById("fileName");
-    const generateBtn = document.getElementById("generateBtn");
-    const message = document.getElementById("message");
-    const userText = document.getElementById("userText");
-    const jobPosition = document.getElementById("jobPosition");
+.navbar {
+    height: 70px;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
 
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
-    let extractedPDFText = "";
+    padding: 0 7%;
+}
 
+.logo {
+    font-size: 21px;
+    font-weight: 700;
+}
 
-    // =========================
-    // PDF UPLOAD
-    // =========================
+.logo span {
+    color: #2563eb;
+}
 
-    if (pdfInput) {
+.status {
+    font-size: 14px;
+    color: #16a34a;
+}
 
-        pdfInput.addEventListener("change", async function () {
 
-            const file = pdfInput.files[0];
+.container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 70px 20px;
+}
 
-            if (!file) {
-                return;
-            }
 
+.hero {
+    text-align: center;
+    margin-bottom: 50px;
+}
 
-            if (
-                file.type !== "application/pdf" &&
-                !file.name.toLowerCase().endsWith(".pdf")
-            ) {
+.badge {
+    display: inline-block;
 
-                message.textContent =
-                    "❌ Please select a PDF file.";
+    background: #eaf2ff;
+    color: #2563eb;
 
-                return;
-            }
+    padding: 8px 15px;
+    border-radius: 30px;
 
+    font-size: 14px;
+    font-weight: 600;
 
-            fileName.textContent =
-                "⏳ Reading " + file.name + "...";
+    margin-bottom: 20px;
+}
 
-            message.textContent =
-                "⏳ Reading your PDF...";
+.hero h1 {
+    font-size: 48px;
+    line-height: 1.15;
 
+    max-width: 750px;
+    margin: auto;
+}
 
-            try {
+.hero h1 span {
+    color: #2563eb;
+}
 
-                // Check PDF.js
+.hero p {
+    max-width: 650px;
+    margin: 20px auto;
 
-                if (
-                    typeof pdfjsLib === "undefined"
-                ) {
+    color: #6b7280;
+    font-size: 17px;
+    line-height: 1.6;
+}
 
-                    throw new Error(
-                        "PDF.js is not loaded."
-                    );
-                }
 
+.generator {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 
-                pdfjsLib.GlobalWorkerOptions.workerSrc =
-                    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    gap: 25px;
+}
 
 
-                // Read PDF
+.card {
+    background: white;
 
-                const buffer =
-                    await file.arrayBuffer();
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
 
+    padding: 30px;
 
-                const pdf =
-                    await pdfjsLib
-                        .getDocument({
-                            data: buffer
-                        })
-                        .promise;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+}
 
+.card h2 {
+    font-size: 20px;
+    margin-bottom: 25px;
+}
 
-                let text = "";
 
+.upload-box {
+    border: 2px dashed #cbd5e1;
 
-                // Read pages
+    border-radius: 14px;
 
-                for (
-                    let i = 1;
-                    i <= pdf.numPages;
-                    i++
-                ) {
+    padding: 35px 20px;
 
-                    const page =
-                        await pdf.getPage(i);
+    text-align: center;
 
+    transition: 0.2s;
+}
 
-                    const content =
-                        await page.getTextContent();
+.upload-box:hover {
+    border-color: #2563eb;
+    background: #f8fbff;
+}
 
+.upload-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
 
-                    for (
-                        const item of content.items
-                    ) {
+.upload-box h3 {
+    margin-bottom: 8px;
+}
 
-                        if (item.str) {
-                            text +=
-                                item.str + " ";
-                        }
-                    }
+.upload-box p {
+    color: #6b7280;
+    font-size: 14px;
 
+    margin-bottom: 20px;
+}
 
-                    text += "\n";
-                }
+.upload-btn {
+    display: inline-block;
 
+    background: #111827;
+    color: white;
 
-                extractedPDFText =
-                    text.trim();
+    padding: 11px 18px;
 
+    border-radius: 9px;
 
-                if (!extractedPDFText) {
+    cursor: pointer;
 
-                    fileName.textContent =
-                        "⚠️ " + file.name;
+    font-size: 14px;
+}
 
-                    message.textContent =
-                        "⚠️ This PDF contains no readable text.";
+#fileName {
+    margin-top: 15px;
 
-                    return;
-                }
+    color: #2563eb;
 
+    font-size: 14px;
+}
 
-                // SUCCESS
 
-                fileName.textContent =
-                    "✅ " + file.name;
+.separator {
+    display: flex;
+    align-items: center;
 
-                message.textContent =
-                    "✅ PDF uploaded successfully!";
+    gap: 15px;
 
+    margin: 25px 0;
 
-                console.log(
-                    "PDF TEXT:",
-                    extractedPDFText
-                );
+    color: #9ca3af;
+}
 
-            } catch (error) {
+.separator::before,
+.separator::after {
+    content: "";
 
-                console.error(
-                    "PDF ERROR:",
-                    error
-                );
+    height: 1px;
 
+    background: #e5e7eb;
 
-                extractedPDFText = "";
+    flex: 1;
+}
 
 
-                fileName.textContent =
-                    "❌ " + file.name;
+textarea {
+    width: 100%;
+    height: 180px;
 
+    resize: vertical;
 
-                message.textContent =
-                    "❌ Error reading PDF: " +
-                    error.message;
-            }
+    border: 1px solid #d1d5db;
 
-        });
+    border-radius: 12px;
 
+    padding: 15px;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+    border-color: #2563eb;
+}
+
+
+.card > label {
+    display: block;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    margin-bottom: 8px;
+}
+
+input[type="text"] {
+    width: 100%;
+
+    padding: 13px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 10px;
+
+    margin-bottom: 25px;
+
+    outline: none;
+
+    font-size: 14px;
+}
+
+
+.options {
+    display: flex;
+
+    gap: 10px;
+
+    margin-bottom: 25px;
+}
+
+.option {
+    flex: 1;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 10px;
+
+    padding: 14px;
+
+    cursor: pointer;
+}
+
+.option input {
+    margin-right: 8px;
+}
+
+.option span {
+    font-size: 14px;
+}
+
+
+.language {
+    display: flex;
+
+    justify-content: space-between;
+
+    background: #f8fafc;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    margin-bottom: 20px;
+
+    font-size: 14px;
+}
+
+
+.generate-btn {
+    width: 100%;
+
+    border: none;
+
+    background: #2563eb;
+
+    color: white;
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.generate-btn:hover {
+    background: #1d4ed8;
+}
+
+.message {
+    text-align: center;
+
+    margin-top: 15px;
+
+    font-size: 14px;
+}
+
+
+footer {
+    text-align: center;
+
+    padding: 30px;
+
+    color: #9ca3af;
+
+    font-size: 13px;
+}
+
+
+@media (max-width: 800px) {
+
+    .generator {
+        grid-template-columns: 1fr;
     }
 
-
-    // =========================
-    // GENERATE
-    // =========================
-
-    if (generateBtn) {
-
-        generateBtn.addEventListener(
-            "click",
-            async function () {
-
-                const manualText =
-                    userText
-                        ? userText.value.trim()
-                        : "";
-
-
-                const job =
-                    jobPosition
-                        ? jobPosition.value.trim()
-                        : "";
-
-
-                // PDF OR TEXT
-
-                const information =
-                    manualText ||
-                    extractedPDFText;
-
-
-                // DOCUMENT TYPE
-
-                const selected =
-                    document.querySelector(
-                        'input[name="document"]:checked'
-                    );
-
-
-                const documentType =
-                    selected
-                        ? selected.value
-                        : "cv";
-
-
-                // CHECK INFORMATION
-
-                if (!information) {
-
-                    message.textContent =
-                        "⚠️ Upload a PDF or enter your information.";
-
-                    return;
-                }
-
-
-                // CHECK JOB
-
-                if (!job) {
-
-                    message.textContent =
-                        "⚠️ Please enter the target job.";
-
-                    return;
-                }
-
-
-                // LOADING
-
-                generateBtn.disabled =
-                    true;
-
-
-                generateBtn.textContent =
-                    "⏳ Creating...";
-
-
-                message.textContent =
-                    "🤖 AI is creating your German CV...";
-
-
-                try {
-
-                    const response =
-                        await fetch(
-                            "/api/generate",
-                            {
-                                method: "POST",
-
-                                headers: {
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                body:
-                                    JSON.stringify({
-                                        information:
-                                            information,
-
-                                        job:
-                                            job,
-
-                                        document:
-                                            documentType
-                                    })
-                            }
-                        );
-
-
-                    // Read response safely
-
-                    const data =
-                        await response.json();
-
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            data.error ||
-                            "API request failed."
-                        );
-                    }
-
-
-                    if (!data.result) {
-
-                        throw new Error(
-                            "No result from AI."
-                        );
-                    }
-
-
-                    // SHOW RESULT
-
-                    showResult(
-                        data.result
-                    );
-
-
-                    // CREATE PDF
-
-                    createPDF(
-                        data.result,
-                        job
-                    );
-
-
-                    message.textContent =
-                        "✅ German CV created successfully!";
-
-
-                } catch (error) {
-
-                    console.error(
-                        "GENERATE ERROR:",
-                        error
-                    );
-
-
-                    message.textContent =
-                        "❌ " +
-                        error.message;
-
-
-                } finally {
-
-                    generateBtn.disabled =
-                        false;
-
-
-                    generateBtn.textContent =
-                        "✨ Generate Documents";
-                }
-
-            }
-        );
-
+    .hero h1 {
+        font-size: 36px;
     }
 
-
-    // =========================
-    // SHOW RESULT
-    // =========================
-
-    function showResult(text) {
-
-        let box =
-            document.getElementById(
-                "resultBox"
-            );
-
-
-        if (!box) {
-
-            box =
-                document.createElement(
-                    "div"
-                );
-
-
-            box.id =
-                "resultBox";
-
-
-            box.style.marginTop =
-                "30px";
-
-
-            box.style.padding =
-                "30px";
-
-
-            box.style.background =
-                "white";
-
-
-            box.style.border =
-                "1px solid #ddd";
-
-
-            box.style.borderRadius =
-                "15px";
-
-
-            box.style.whiteSpace =
-                "pre-wrap";
-
-
-            box.style.lineHeight =
-                "1.7";
-
-
-            box.style.fontFamily =
-                "Arial, sans-serif";
-
-
-            document
-                .getElementById(
-                    "resultSection"
-                )
-                ?.appendChild(box);
-
-
-            if (!box.parentElement) {
-
-                document.body.appendChild(
-                    box
-                );
-            }
-        }
-
-
-        box.textContent =
-            text;
+    .options {
+        flex-direction: column;
     }
-
-
-    // =========================
-    // CREATE PDF
-    // =========================
-
-    function createPDF(text, job) {
-
-        if (
-            !window.jspdf ||
-            !window.jspdf.jsPDF
-        ) {
-
-            console.error(
-                "jsPDF is not loaded."
-            );
-
-            return;
-        }
-
-
-        const jsPDF =
-            window.jspdf.jsPDF;
-
-
-        const pdf =
-            new jsPDF({
-                orientation:
-                    "portrait",
-
-                unit:
-                    "mm",
-
-                format:
-                    "a4"
-            });
-
-
-        const width =
-            pdf.internal.pageSize.getWidth();
-
-
-        const height =
-            pdf.internal.pageSize.getHeight();
-
-
-        const margin = 18;
-
-
-        // TITLE
-
-        pdf.setFont(
-            "helvetica",
-            "bold"
-        );
-
-
-        pdf.setFontSize(
-            20
-        );
-
-
-        pdf.text(
-            "LEBENSLAUF",
-            margin,
-            20
-        );
-
-
-        // JOB
-
-        pdf.setFont(
-            "helvetica",
-            "normal"
-        );
-
-
-        pdf.setFontSize(
-            10
-        );
-
-
-        pdf.text(
-            "Position: " + job,
-            margin,
-            28
-        );
-
-
-        // CONTENT
-
-        const lines =
-            pdf.splitTextToSize(
-                text,
-                width - margin * 2
-            );
-
-
-        let y = 40;
-
-
-        for (
-            const line of lines
-        ) {
-
-            if (
-                y >
-                height - 15
-            ) {
-
-                pdf.addPage();
-
-                y = 20;
-            }
-
-
-            pdf.text(
-                line,
-                margin,
-                y
-            );
-
-
-            y += 5;
-        }
-
-
-        // FILE NAME
-
-        const cleanJob =
-            job
-                .replace(
-                    /[^a-zA-Z0-9äöüÄÖÜß ]/g,
-                    ""
-                )
-                .trim()
-                .replace(
-                    /\s+/g,
-                    "-"
-                );
-
-
-        pdf.save(
-            "German-CV-" +
-            (
-                cleanJob ||
-                "Document"
-            ) +
-            ".pdf"
-        );
-    }
-
-});
-```
+}
