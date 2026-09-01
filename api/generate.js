@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { information, job, document } = req.body;
+        const { information, job, document } = req.body || {};
 
         if (!information || !job) {
             return res.status(400).json({
@@ -15,9 +15,9 @@ export default async function handler(req, res) {
         }
 
         const prompt = `
-You are a professional German CV writer.
+You are a professional German CV and cover letter writer.
 
-Create a professional German job application based ONLY on the information provided by the user.
+Create a professional German job application based ONLY on the information provided.
 
 Target job:
 ${job}
@@ -26,44 +26,43 @@ User information:
 ${information}
 
 Requested document:
-${document === "both" ? "German CV and German Cover Letter" : "German CV only"}
+${document === "both"
+    ? "German CV and German Cover Letter"
+    : "German CV only"}
 
 Rules:
 - Write everything in professional German.
-- Do not invent qualifications, jobs, dates, companies, education or skills.
+- Do not invent qualifications, experience, education, dates, companies or skills.
 - Improve grammar and professional wording.
 - Adapt the CV to the target job.
-- Keep factual information accurate.
+- Keep all factual information accurate.
 - Use a clean professional structure.
-- If information is missing, simply omit it.
-- For the cover letter, make it concise and specific to the target job.
+- If information is missing, omit it.
+- Make the cover letter concise and specific to the target job.
 
-Return the result as plain text.
+Return the final documents as plain text.
 `;
 
         const response = await fetch(
-            "https://api.openai.com/v1/chat/completions",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+            process.env.GEMINI_API_KEY,
             {
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+                    "Content-Type": "application/json"
                 },
 
                 body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [
+                    contents: [
                         {
-                            role: "system",
-                            content: "You are an expert German CV and cover letter writer."
-                        },
-                        {
-                            role: "user",
-                            content: prompt
+                            parts: [
+                                {
+                                    text: prompt
+                                }
+                            ]
                         }
-                    ],
-                    temperature: 0.4
+                    ]
                 })
             }
         );
@@ -71,19 +70,24 @@ Return the result as plain text.
         const data = await response.json();
 
         if (!response.ok) {
-            console.error(data);
+            console.error("Gemini API error:", data);
 
             return res.status(response.status).json({
-                error: data.error?.message || "OpenAI API error."
+                error:
+                    data?.error?.message ||
+                    "Gemini API error."
             });
         }
 
         const result =
-            data.choices?.[0]?.message?.content;
+            data?.candidates?.[0]?.content?.parts
+                ?.map(part => part.text || "")
+                .join("")
+                .trim();
 
         if (!result) {
             return res.status(500).json({
-                error: "No result returned from AI."
+                error: "Gemini returned no text."
             });
         }
 
@@ -93,10 +97,10 @@ Return the result as plain text.
 
     } catch (error) {
 
-        console.error(error);
+        console.error("Server error:", error);
 
         return res.status(500).json({
-            error: "Server error."
+            error: "Server error: " + error.message
         });
     }
 }
