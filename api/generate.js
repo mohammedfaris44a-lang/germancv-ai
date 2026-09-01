@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         const prompt = `
 You are a professional German CV and cover letter writer.
 
-Create a professional German job application based ONLY on the information provided.
+Create a professional German job application based ONLY on the information provided by the user.
 
 Target job:
 ${job}
@@ -44,7 +44,7 @@ Return the final documents as plain text.
 `;
 
         const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" +
             process.env.GEMINI_API_KEY,
             {
                 method: "POST",
