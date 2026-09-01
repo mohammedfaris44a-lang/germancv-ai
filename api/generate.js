@@ -1,14 +1,22 @@
 ```javascript
 export default async function handler(req, res) {
 
-    // Only POST requests
+    // =========================
+    // METHOD CHECK
+    // =========================
+
     if (req.method !== "POST") {
         return res.status(405).json({
             error: "Method not allowed"
         });
     }
 
+
     try {
+
+        // =========================
+        // GET DATA
+        // =========================
 
         const {
             information,
@@ -17,7 +25,6 @@ export default async function handler(req, res) {
         } = req.body || {};
 
 
-        // Check input
         if (!information || !job) {
             return res.status(400).json({
                 error: "Information and job are required."
@@ -25,25 +32,29 @@ export default async function handler(req, res) {
         }
 
 
-        // Check API key
+        // =========================
+        // API KEY
+        // =========================
+
         const apiKey =
             process.env.GEMINI_API_KEY;
 
+
         if (!apiKey) {
             return res.status(500).json({
-                error: "GEMINI_API_KEY is not configured in Vercel."
+                error: "GEMINI_API_KEY is missing in Vercel."
             });
         }
 
 
-        // ==========================================
+        // =========================
         // PROMPT
-        // ==========================================
+        // =========================
 
         const prompt = `
-You are a professional German CV and job application writer.
+You are a professional German CV writer.
 
-Create a professional German job application based ONLY on the information provided by the user.
+Create a professional German job application.
 
 TARGET JOB:
 ${job}
@@ -51,40 +62,37 @@ ${job}
 USER INFORMATION:
 ${information}
 
-REQUESTED DOCUMENT:
+DOCUMENT REQUEST:
 ${
     document === "both"
-        ? "German CV and German Cover Letter"
-        : "German CV only"
+        ? "Create a German CV AND a German cover letter."
+        : "Create a German CV only."
 }
 
-IMPORTANT RULES:
-
-- Write everything in professional German.
-- Do NOT invent information.
-- Do NOT invent qualifications.
-- Do NOT invent work experience.
-- Do NOT invent education.
-- Do NOT invent dates.
-- Do NOT invent companies.
-- Do NOT invent skills.
-- Keep all factual information accurate.
-- Improve grammar and wording.
+RULES:
+- Write in professional German.
+- Use ONLY information supplied by the user.
+- Never invent experience.
+- Never invent education.
+- Never invent companies.
+- Never invent dates.
+- Never invent qualifications.
+- Never invent skills.
+- Improve grammar and professional wording.
 - Adapt the CV to the target job.
-- Use a clean professional structure.
-- If information is missing, simply omit it.
-- Make the CV professional and concise.
-- If a cover letter is requested, make it specific to the target job.
-- Return plain text only.
-- Do not use markdown code blocks.
+- Keep all facts accurate.
+- If information is missing, omit it.
+- Return plain text.
+- Do not return JSON.
+- Do not use code blocks.
 
 Create the final document now.
 `;
 
 
-        // ==========================================
-        // GEMINI API
-        // ==========================================
+        // =========================
+        // GEMINI REQUEST
+        // =========================
 
         const url =
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
@@ -96,31 +104,22 @@ Create the final document now.
                 method: "POST",
 
                 headers: {
-
-                    "Content-Type":
-                        "application/json",
-
-                    "x-goog-api-key":
-                        apiKey
-
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": apiKey
                 },
 
                 body: JSON.stringify({
 
                     contents: [
-
                         {
                             role: "user",
 
                             parts: [
-
                                 {
                                     text: prompt
                                 }
-
                             ]
                         }
-
                     ]
 
                 })
@@ -128,67 +127,89 @@ Create the final document now.
             });
 
 
+        // =========================
+        // READ RESPONSE
+        // =========================
+
         const data =
             await response.json();
 
 
-        // ==========================================
-        // API ERROR
-        // ==========================================
+        console.log(
+            "Gemini status:",
+            response.status
+        );
+
+
+        console.log(
+            "Gemini response:",
+            JSON.stringify(data)
+        );
+
+
+        // =========================
+        // GEMINI ERROR
+        // =========================
 
         if (!response.ok) {
-
-            console.error(
-                "Gemini API error:",
-                data
-            );
-
-            return res.status(
-                response.status
-            ).json({
-
-                error:
-                    data?.error?.message ||
-                    "Gemini API error."
-
-            });
-        }
-
-
-        // ==========================================
-        // GET AI RESULT
-        // ==========================================
-
-        const result =
-            data
-                ?.candidates?.[0]
-                ?.content?.parts
-                ?.map(
-                    part => part.text || ""
-                )
-                .join("")
-                .trim();
-
-
-        if (!result) {
-
-            console.error(
-                "Gemini returned:",
-                data
-            );
 
             return res.status(500).json({
 
                 error:
-                    "Gemini returned no text."
+                    "Gemini API Error: " +
+                    (
+                        data?.error?.message ||
+                        "Unknown Gemini error"
+                    )
 
             });
         }
 
 
-        // ==========================================
+        // =========================
+        // GET TEXT
+        // =========================
+
+        let result = "";
+
+
+        if (
+            data?.candidates &&
+            data.candidates.length > 0
+        ) {
+
+            const parts =
+                data.candidates[0]?.content?.parts || [];
+
+
+            result =
+                parts
+                    .map(
+                        part => part?.text || ""
+                    )
+                    .join("")
+                    .trim();
+        }
+
+
+        // =========================
+        // EMPTY RESULT
+        // =========================
+
+        if (!result) {
+
+            return res.status(500).json({
+
+                error:
+                    "Gemini returned an empty response."
+
+            });
+        }
+
+
+        // =========================
         // SUCCESS
-        // ==========================================
+        // =========================
 
         return res.status(200).json({
 
@@ -200,9 +221,10 @@ Create the final document now.
     } catch (error) {
 
         console.error(
-            "Server error:",
+            "SERVER ERROR:",
             error
         );
+
 
         return res.status(500).json({
 
