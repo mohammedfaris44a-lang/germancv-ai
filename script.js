@@ -1,3 +1,4 @@
+```javascript
 const pdfInput = document.getElementById("pdfInput");
 const fileName = document.getElementById("fileName");
 const generateBtn = document.getElementById("generateBtn");
@@ -9,36 +10,60 @@ let extractedPDFText = "";
 
 
 // ========================================
-// READ PDF
+// PDF.JS WORKER
+// ========================================
+
+if (typeof pdfjsLib !== "undefined") {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+
+// ========================================
+// READ UPLOADED PDF
 // ========================================
 
 pdfInput.addEventListener("change", async function () {
 
-    if (!this.files || !this.files.length) return;
+    if (!this.files || !this.files.length) {
+        return;
+    }
 
     const file = this.files[0];
 
     if (file.type !== "application/pdf") {
-        message.textContent = "❌ Please select a PDF file.";
+
+        message.textContent =
+            "❌ Please select a PDF file.";
+
         return;
     }
 
-    fileName.textContent = "📄 Reading: " + file.name;
-    message.textContent = "⏳ Reading your PDF...";
+    fileName.textContent =
+        "📄 Reading: " + file.name;
+
+    message.textContent =
+        "⏳ Reading your PDF...";
 
     try {
 
-        const arrayBuffer = await file.arrayBuffer();
+        const arrayBuffer =
+            await file.arrayBuffer();
 
         if (typeof pdfjsLib === "undefined") {
-            throw new Error("PDF.js is not loaded.");
+
+            throw new Error(
+                "PDF.js is not loaded."
+            );
         }
 
-        const pdf = await pdfjsLib.getDocument({
-            data: arrayBuffer
-        }).promise;
+        const pdf =
+            await pdfjsLib.getDocument({
+                data: arrayBuffer
+            }).promise;
 
         let fullText = "";
+
 
         for (
             let pageNumber = 1;
@@ -46,24 +71,34 @@ pdfInput.addEventListener("change", async function () {
             pageNumber++
         ) {
 
-            const page = await pdf.getPage(pageNumber);
+            const page =
+                await pdf.getPage(pageNumber);
 
-            const content = await page.getTextContent();
+            const content =
+                await page.getTextContent();
 
-            const pageText = content.items
-                .map(item => item.str)
-                .join(" ");
+            const pageText =
+                content.items
+                    .map(item => item.str)
+                    .join(" ");
 
-            fullText += pageText + "\n";
+            fullText +=
+                pageText + "\n";
         }
 
-        extractedPDFText = fullText.trim();
+
+        extractedPDFText =
+            fullText.trim();
+
 
         if (!extractedPDFText) {
+
             message.textContent =
                 "⚠️ No readable text found in this PDF.";
+
             return;
         }
+
 
         fileName.textContent =
             "✅ " + file.name + " — Ready";
@@ -82,147 +117,197 @@ pdfInput.addEventListener("change", async function () {
 
 
 // ========================================
-// GENERATE
+// GENERATE DOCUMENT
 // ========================================
 
-generateBtn.addEventListener("click", async function () {
+generateBtn.addEventListener(
+    "click",
+    async function () {
 
-    const text = userText.value.trim();
+        const text =
+            userText.value.trim();
 
-    const job = jobPosition.value.trim();
+        const job =
+            jobPosition.value.trim();
 
-    const documentType =
-        document.querySelector(
-            'input[name="document"]:checked'
-        )?.value || "cv";
+        const finalInformation =
+            text || extractedPDFText;
 
-    const finalInformation =
-        text || extractedPDFText;
-
-
-    if (!finalInformation) {
-
-        message.textContent =
-            "⚠️ Upload a PDF or enter your information.";
-
-        return;
-    }
+        const documentType =
+            document.querySelector(
+                'input[name="document"]:checked'
+            )?.value || "cv";
 
 
-    if (!job) {
+        // CHECK INFORMATION
 
-        message.textContent =
-            "⚠️ Please enter the target job.";
+        if (!finalInformation) {
 
-        return;
-    }
+            message.textContent =
+                "⚠️ Upload a PDF or enter your information.";
 
-
-    generateBtn.disabled = true;
-
-    generateBtn.textContent =
-        "⏳ Creating...";
-
-    message.textContent =
-        "🤖 AI is creating your German CV...";
-
-
-    try {
-
-        const response = await fetch(
-            "/api/generate",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    information: finalInformation,
-                    job: job,
-                    document: documentType
-                })
-            }
-        );
-
-
-        const data = await response.json();
-
-
-        if (!response.ok) {
-            throw new Error(
-                data.error || "AI generation failed."
-            );
+            return;
         }
 
 
-        if (!data.result) {
-            throw new Error(
-                "AI returned no result."
-            );
+        // CHECK JOB
+
+        if (!job) {
+
+            message.textContent =
+                "⚠️ Please enter the target job.";
+
+            return;
         }
 
 
-        // Show result
-        showResult(data.result);
-
-
-        // Create PDF
-        createPDF(data.result, job);
-
-
-        message.textContent =
-            "✅ PDF created successfully!";
-
-
-    } catch (error) {
-
-        console.error(error);
-
-        message.textContent =
-            "❌ " + error.message;
-
-    } finally {
-
-        generateBtn.disabled = false;
+        generateBtn.disabled = true;
 
         generateBtn.textContent =
-            "✨ Generate Documents";
+            "⏳ Creating...";
+
+        message.textContent =
+            "🤖 AI is creating your German CV...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/generate",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            information:
+                                finalInformation,
+
+                            job:
+                                job,
+
+                            document:
+                                documentType
+                        })
+                    }
+                );
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.error ||
+                    "AI generation failed."
+                );
+            }
+
+
+            if (!data.result) {
+
+                throw new Error(
+                    "AI returned no result."
+                );
+            }
+
+
+            // SHOW RESULT
+
+            showResult(
+                data.result
+            );
+
+
+            // CREATE PDF
+
+            createPDF(
+                data.result,
+                job
+            );
+
+
+            message.textContent =
+                "✅ CV generated and PDF downloaded!";
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            message.textContent =
+                "❌ " + error.message;
+
+        } finally {
+
+            generateBtn.disabled = false;
+
+            generateBtn.textContent =
+                "✨ Generate Documents";
+        }
     }
-});
+);
 
 
 // ========================================
-// SHOW RESULT
+// SHOW AI RESULT
 // ========================================
 
 function showResult(text) {
 
     let resultBox =
-        document.getElementById("resultBox");
+        document.getElementById(
+            "resultBox"
+        );
+
 
     if (!resultBox) {
 
         resultBox =
             document.createElement("div");
 
-        resultBox.id = "resultBox";
+        resultBox.id =
+            "resultBox";
 
-        resultBox.style.marginTop = "25px";
-        resultBox.style.padding = "20px";
-        resultBox.style.background = "white";
-        resultBox.style.border = "1px solid #e5e7eb";
-        resultBox.style.borderRadius = "12px";
-        resultBox.style.whiteSpace = "pre-wrap";
-        resultBox.style.lineHeight = "1.6";
+        resultBox.style.marginTop =
+            "30px";
+
+        resultBox.style.padding =
+            "25px";
+
+        resultBox.style.background =
+            "#ffffff";
+
+        resultBox.style.border =
+            "1px solid #e5e7eb";
+
+        resultBox.style.borderRadius =
+            "15px";
+
+        resultBox.style.whiteSpace =
+            "pre-wrap";
+
+        resultBox.style.lineHeight =
+            "1.7";
+
+        resultBox.style.fontSize =
+            "14px";
 
         document
-            .querySelector(".generator")
+            .querySelector(".container")
             .appendChild(resultBox);
     }
 
-    resultBox.textContent = text;
+
+    resultBox.textContent =
+        text;
 }
 
 
@@ -238,14 +323,22 @@ function createPDF(text, job) {
     ) {
 
         throw new Error(
-            "PDF generator is not loaded. Please refresh the page."
+            "PDF generator is not loaded."
         );
     }
 
 
-    const { jsPDF } = window.jspdf;
+    const {
+        jsPDF
+    } = window.jspdf;
 
-    const pdf = new jsPDF();
+
+    const pdf =
+        new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4"
+        });
 
 
     const pageWidth =
@@ -255,86 +348,150 @@ function createPDF(text, job) {
         pdf.internal.pageSize.getHeight();
 
 
-    const margin = 20;
+    const margin = 18;
 
-    const maxWidth =
-        pageWidth - (margin * 2);
+    const usableWidth =
+        pageWidth - margin * 2;
 
 
-    // Title
-    pdf.setFont("helvetica", "bold");
+    // ====================================
+    // TITLE
+    // ====================================
+
+    pdf.setFont(
+        "helvetica",
+        "bold"
+    );
 
     pdf.setFontSize(20);
 
     pdf.text(
-        "German CV",
+        "LEBENSLAUF",
         margin,
-        25
+        22
     );
 
 
-    // Job
-    pdf.setFont("helvetica", "normal");
+    // ====================================
+    // JOB
+    // ====================================
 
-    pdf.setFontSize(11);
+    pdf.setFont(
+        "helvetica",
+        "normal"
+    );
+
+    pdf.setFontSize(10);
 
     pdf.text(
-        "Target Job: " + job,
+        "Position: " + job,
         margin,
-        34
+        31
     );
 
 
-    // Line
+    // ====================================
+    // LINE
+    // ====================================
+
     pdf.line(
         margin,
-        40,
+        36,
         pageWidth - margin,
-        40
+        36
     );
 
 
-    // Text
+    // ====================================
+    // TEXT
+    // ====================================
+
     pdf.setFontSize(10);
 
     const lines =
         pdf.splitTextToSize(
-            text,
-            maxWidth
+            cleanText(text),
+            usableWidth
         );
 
 
-    let y = 50;
+    let y = 46;
 
 
-    for (const line of lines) {
+    for (
+        let i = 0;
+        i < lines.length;
+        i++
+    ) {
 
-        if (y > pageHeight - 20) {
+        if (
+            y >
+            pageHeight - 18
+        ) {
 
             pdf.addPage();
 
             y = 20;
         }
 
+
         pdf.text(
-            line,
+            lines[i],
             margin,
             y
         );
 
-        y += 5;
+
+        y += 5.2;
     }
 
 
-    // Download
+    // ====================================
+    // FILE NAME
+    // ====================================
+
     const safeJob =
         job
-            .replace(/[^a-zA-Z0-9äöüÄÖÜß ]/g, "")
+            .replace(
+                /[^a-zA-Z0-9äöüÄÖÜß ]/g,
+                ""
+            )
             .trim()
-            .replace(/\s+/g, "-");
+            .replace(
+                /\s+/g,
+                "-"
+            );
 
 
-    pdf.save(
-        `German-CV-${safeJob || "Document"}.pdf`
-    );
+    const fileName =
+        "German-CV-" +
+        (
+            safeJob ||
+            "Document"
+        ) +
+        ".pdf";
+
+
+    // ====================================
+    // DOWNLOAD
+    // ====================================
+
+    pdf.save(fileName);
 }
+
+
+// ========================================
+// CLEAN TEXT FOR PDF
+// ========================================
+
+function cleanText(text) {
+
+    return text
+        .replace(/\r/g, "")
+        .replace(/\t/g, "    ")
+        .replace(/[•●]/g, "-")
+        .replace(/[“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+        .trim();
+}
+```
