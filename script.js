@@ -7,8 +7,9 @@ const jobPosition = document.getElementById("jobPosition");
 
 let extractedPDFText = "";
 
+
 // ===============================
-// PDF UPLOAD
+// PDF READER
 // ===============================
 
 pdfInput.addEventListener("change", async function () {
@@ -31,7 +32,6 @@ pdfInput.addEventListener("change", async function () {
 
         const arrayBuffer = await file.arrayBuffer();
 
-        // Check if PDF.js is available
         if (typeof pdfjsLib === "undefined") {
             throw new Error("PDF.js is not loaded.");
         }
@@ -66,9 +66,6 @@ pdfInput.addEventListener("change", async function () {
             message.textContent =
                 "⚠️ No readable text found in this PDF.";
 
-            fileName.textContent =
-                "📄 " + file.name;
-
             return;
         }
 
@@ -78,48 +75,44 @@ pdfInput.addEventListener("change", async function () {
         fileName.textContent =
             "✅ " + file.name + " — Ready";
 
-        console.log("========== PDF TEXT ==========");
-        console.log(extractedPDFText);
-        console.log("==============================");
-
     } catch (error) {
 
-        console.error("PDF ERROR:", error);
+        console.error(error);
 
         extractedPDFText = "";
 
         message.textContent =
             "❌ Could not read this PDF.";
-
-        fileName.textContent =
-            "📄 " + file.name;
     }
 });
 
 
 // ===============================
-// GENERATE BUTTON
+// GENERATE WITH AI
 // ===============================
 
-generateBtn.addEventListener("click", function () {
+generateBtn.addEventListener("click", async function () {
 
     const text = userText.value.trim();
 
     const job = jobPosition.value.trim();
 
-    // Use typed text first.
-    // If there is no typed text, use PDF text.
+    const documentType =
+        document.querySelector(
+            'input[name="document"]:checked'
+        )?.value || "cv";
+
+
     const finalInformation =
         text.length > 0
             ? text
             : extractedPDFText;
 
-    console.log("========== GENERATION ==========");
-    console.log("Job:", job);
-    console.log("Information:", finalInformation);
-    console.log("================================");
 
-    // No information
+    // ===============================
+    // VALIDATION
+    // ===============================
+
     if (!finalInformation) {
 
         message.textContent =
@@ -128,7 +121,7 @@ generateBtn.addEventListener("click", function () {
         return;
     }
 
-    // No job
+
     if (!job) {
 
         message.textContent =
@@ -139,19 +132,125 @@ generateBtn.addEventListener("click", function () {
         return;
     }
 
-    // Everything is ready
+
+    // ===============================
+    // START AI
+    // ===============================
+
     message.textContent =
-        "⏳ Preparing your German CV...";
+        "🤖 AI is creating your German CV...";
 
     generateBtn.disabled = true;
 
-    setTimeout(function () {
+
+    try {
+
+        const response = await fetch(
+            "/api/generate",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    information: finalInformation,
+                    job: job,
+                    document: documentType
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "AI generation failed."
+            );
+        }
+
+
+        // ===============================
+        // SHOW RESULT
+        // ===============================
+
+        displayResult(data.result);
+
+
+        message.textContent =
+            "✅ Your German documents are ready!";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+            "❌ " + error.message;
+
+    } finally {
 
         generateBtn.disabled = false;
 
-        message.textContent =
-            "✅ Information ready for AI processing!";
-
-    }, 1000);
+    }
 
 });
+
+
+// ===============================
+// DISPLAY AI RESULT
+// ===============================
+
+function displayResult(result) {
+
+    let resultBox =
+        document.getElementById("resultBox");
+
+
+    if (!resultBox) {
+
+        resultBox =
+            document.createElement("div");
+
+        resultBox.id = "resultBox";
+
+        resultBox.style.marginTop = "25px";
+
+        resultBox.style.padding = "20px";
+
+        resultBox.style.background = "#f8fafc";
+
+        resultBox.style.border =
+            "1px solid #e5e7eb";
+
+        resultBox.style.borderRadius =
+            "12px";
+
+        resultBox.style.whiteSpace =
+            "pre-wrap";
+
+        resultBox.style.lineHeight =
+            "1.6";
+
+        resultBox.style.fontSize =
+            "14px";
+
+
+        document
+            .querySelector(".generator")
+            .appendChild(resultBox);
+    }
+
+
+    resultBox.textContent = result;
+
+    resultBox.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
