@@ -9,29 +9,29 @@ const jobPosition = document.getElementById("jobPosition");
 let extractedPDFText = "";
 
 
-// ========================================
-// PDF.JS WORKER
-// ========================================
-
-if (typeof pdfjsLib !== "undefined") {
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-}
-
-
-// ========================================
-// READ UPLOADED PDF
-// ========================================
+// ==========================================
+// PDF UPLOAD
+// ==========================================
 
 pdfInput.addEventListener("change", async function () {
 
-    if (!this.files || !this.files.length) {
+    const file = this.files && this.files[0];
+
+    if (!file) {
         return;
     }
 
-    const file = this.files[0];
+    console.log("Selected file:", file.name);
+    console.log("File type:", file.type);
+    console.log("File size:", file.size);
 
-    if (file.type !== "application/pdf") {
+
+    // Check PDF
+
+    if (
+        file.type !== "application/pdf" &&
+        !file.name.toLowerCase().endsWith(".pdf")
+    ) {
 
         message.textContent =
             "❌ Please select a PDF file.";
@@ -39,31 +39,52 @@ pdfInput.addEventListener("change", async function () {
         return;
     }
 
+
     fileName.textContent =
-        "📄 Reading: " + file.name;
+        "📄 " + file.name;
 
     message.textContent =
         "⏳ Reading your PDF...";
 
+
     try {
 
-        const arrayBuffer =
-            await file.arrayBuffer();
+        // Check PDF.js
 
-        if (typeof pdfjsLib === "undefined") {
+        if (
+            typeof window.pdfjsLib === "undefined"
+        ) {
 
             throw new Error(
                 "PDF.js is not loaded."
             );
         }
 
+
+        // Set worker
+
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+        // Read file
+
+        const arrayBuffer =
+            await file.arrayBuffer();
+
+
         const pdf =
-            await pdfjsLib.getDocument({
-                data: arrayBuffer
-            }).promise;
+            await window.pdfjsLib
+                .getDocument({
+                    data: arrayBuffer
+                })
+                .promise;
+
 
         let fullText = "";
 
+
+        // Read every page
 
         for (
             let pageNumber = 1;
@@ -74,13 +95,16 @@ pdfInput.addEventListener("change", async function () {
             const page =
                 await pdf.getPage(pageNumber);
 
+
             const content =
                 await page.getTextContent();
+
 
             const pageText =
                 content.items
                     .map(item => item.str)
                     .join(" ");
+
 
             fullText +=
                 pageText + "\n";
@@ -91,24 +115,49 @@ pdfInput.addEventListener("change", async function () {
             fullText.trim();
 
 
+        // No text
+
         if (!extractedPDFText) {
 
             message.textContent =
-                "⚠️ No readable text found in this PDF.";
+                "⚠️ This PDF has no readable text. It may be a scanned image.";
+
+            fileName.textContent =
+                "⚠️ " + file.name;
 
             return;
         }
 
 
+        // SUCCESS
+
         fileName.textContent =
             "✅ " + file.name + " — Ready";
 
         message.textContent =
-            "✅ PDF read successfully!";
+            "✅ PDF uploaded and read successfully!";
+
+
+        console.log(
+            "PDF TEXT:",
+            extractedPDFText
+        );
+
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "PDF ERROR:",
+            error
+        );
+
+
+        extractedPDFText = "";
+
+
+        fileName.textContent =
+            "❌ " + file.name;
+
 
         message.textContent =
             "❌ Could not read this PDF.";
@@ -116,9 +165,9 @@ pdfInput.addEventListener("change", async function () {
 });
 
 
-// ========================================
+// ==========================================
 // GENERATE DOCUMENT
-// ========================================
+// ==========================================
 
 generateBtn.addEventListener(
     "click",
@@ -127,11 +176,18 @@ generateBtn.addEventListener(
         const text =
             userText.value.trim();
 
+
         const job =
             jobPosition.value.trim();
 
+
+        // PDF or manual text
+
         const finalInformation =
             text || extractedPDFText;
+
+
+        // Document type
 
         const documentType =
             document.querySelector(
@@ -139,7 +195,9 @@ generateBtn.addEventListener(
             )?.value || "cv";
 
 
+        // ==================================
         // CHECK INFORMATION
+        // ==================================
 
         if (!finalInformation) {
 
@@ -150,7 +208,9 @@ generateBtn.addEventListener(
         }
 
 
+        // ==================================
         // CHECK JOB
+        // ==================================
 
         if (!job) {
 
@@ -176,6 +236,7 @@ generateBtn.addEventListener(
                 await fetch(
                     "/api/generate",
                     {
+
                         method: "POST",
 
                         headers: {
@@ -193,6 +254,7 @@ generateBtn.addEventListener(
 
                             document:
                                 documentType
+
                         })
                     }
                 );
@@ -214,7 +276,7 @@ generateBtn.addEventListener(
             if (!data.result) {
 
                 throw new Error(
-                    "AI returned no result."
+                    "No result received from AI."
                 );
             }
 
@@ -226,24 +288,32 @@ generateBtn.addEventListener(
             );
 
 
-            // CREATE PDF
+            // PDF DOWNLOAD
 
-            createPDF(
-                data.result,
-                job
-            );
+            if (
+                typeof createPDF ===
+                "function"
+            ) {
+
+                createPDF(
+                    data.result,
+                    job
+                );
+            }
 
 
             message.textContent =
-                "✅ CV generated and PDF downloaded!";
+                "✅ German CV created successfully!";
 
 
         } catch (error) {
 
             console.error(error);
 
+
             message.textContent =
                 "❌ " + error.message;
+
 
         } finally {
 
@@ -256,9 +326,9 @@ generateBtn.addEventListener(
 );
 
 
-// ========================================
-// SHOW AI RESULT
-// ========================================
+// ==========================================
+// SHOW RESULT
+// ==========================================
 
 function showResult(text) {
 
@@ -273,36 +343,44 @@ function showResult(text) {
         resultBox =
             document.createElement("div");
 
+
         resultBox.id =
             "resultBox";
+
 
         resultBox.style.marginTop =
             "30px";
 
+
         resultBox.style.padding =
             "25px";
 
+
         resultBox.style.background =
-            "#ffffff";
+            "white";
+
 
         resultBox.style.border =
             "1px solid #e5e7eb";
 
+
         resultBox.style.borderRadius =
             "15px";
+
 
         resultBox.style.whiteSpace =
             "pre-wrap";
 
+
         resultBox.style.lineHeight =
             "1.7";
 
-        resultBox.style.fontSize =
-            "14px";
 
         document
             .querySelector(".container")
-            .appendChild(resultBox);
+            .appendChild(
+                resultBox
+            );
     }
 
 
@@ -311,9 +389,9 @@ function showResult(text) {
 }
 
 
-// ========================================
+// ==========================================
 // CREATE PDF
-// ========================================
+// ==========================================
 
 function createPDF(text, job) {
 
@@ -322,9 +400,11 @@ function createPDF(text, job) {
         !window.jspdf.jsPDF
     ) {
 
-        throw new Error(
-            "PDF generator is not loaded."
+        console.error(
+            "jsPDF is not loaded."
         );
+
+        return;
     }
 
 
@@ -335,14 +415,14 @@ function createPDF(text, job) {
 
     const pdf =
         new jsPDF({
-            orientation: "portrait",
-            unit: "mm",
-            format: "a4"
+            format: "a4",
+            unit: "mm"
         });
 
 
     const pageWidth =
         pdf.internal.pageSize.getWidth();
+
 
     const pageHeight =
         pdf.internal.pageSize.getHeight();
@@ -350,83 +430,53 @@ function createPDF(text, job) {
 
     const margin = 18;
 
-    const usableWidth =
-        pageWidth - margin * 2;
+
+    const lines =
+        pdf.splitTextToSize(
+            text,
+            pageWidth - margin * 2
+        );
 
 
-    // ====================================
-    // TITLE
-    // ====================================
+    pdf.setFontSize(18);
 
     pdf.setFont(
         "helvetica",
         "bold"
     );
 
-    pdf.setFontSize(20);
 
     pdf.text(
         "LEBENSLAUF",
         margin,
-        22
+        20
     );
 
 
-    // ====================================
-    // JOB
-    // ====================================
+    pdf.setFontSize(10);
 
     pdf.setFont(
         "helvetica",
         "normal"
     );
 
-    pdf.setFontSize(10);
 
     pdf.text(
         "Position: " + job,
         margin,
-        31
+        29
     );
 
 
-    // ====================================
-    // LINE
-    // ====================================
-
-    pdf.line(
-        margin,
-        36,
-        pageWidth - margin,
-        36
-    );
-
-
-    // ====================================
-    // TEXT
-    // ====================================
-
-    pdf.setFontSize(10);
-
-    const lines =
-        pdf.splitTextToSize(
-            cleanText(text),
-            usableWidth
-        );
-
-
-    let y = 46;
+    let y = 40;
 
 
     for (
-        let i = 0;
-        i < lines.length;
-        i++
+        const line of lines
     ) {
 
         if (
-            y >
-            pageHeight - 18
+            y > pageHeight - 15
         ) {
 
             pdf.addPage();
@@ -436,19 +486,15 @@ function createPDF(text, job) {
 
 
         pdf.text(
-            lines[i],
+            line,
             margin,
             y
         );
 
 
-        y += 5.2;
+        y += 5;
     }
 
-
-    // ====================================
-    // FILE NAME
-    // ====================================
 
     const safeJob =
         job
@@ -463,35 +509,13 @@ function createPDF(text, job) {
             );
 
 
-    const fileName =
+    pdf.save(
         "German-CV-" +
         (
             safeJob ||
             "Document"
         ) +
-        ".pdf";
-
-
-    // ====================================
-    // DOWNLOAD
-    // ====================================
-
-    pdf.save(fileName);
-}
-
-
-// ========================================
-// CLEAN TEXT FOR PDF
-// ========================================
-
-function cleanText(text) {
-
-    return text
-        .replace(/\r/g, "")
-        .replace(/\t/g, "    ")
-        .replace(/[•●]/g, "-")
-        .replace(/[“”]/g, '"')
-        .replace(/[‘’]/g, "'")
-        .trim();
+        ".pdf"
+    );
 }
 ```
